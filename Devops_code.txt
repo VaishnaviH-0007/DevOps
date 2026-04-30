@@ -1,0 +1,205 @@
+D1 Dockerfile
+
+FROM python:3.10 
+WORKDIR /app 
+COPY . . 
+CMD ["python","app.py"] 
+
+D2 Jenkinsfile
+
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = "varshithaj/imagev"
+        TAG = "v1"
+    }
+
+    stages {
+        stage('Clone Code') {
+            steps {
+                // Fixed: Removed the double 'git' keyword
+                git branch: 'main', url: 'https://github.com/VarshithaJ13/b2.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                // Fixed: Changed 'sh' to 'bat' and used Windows variable syntax
+                bat "docker build -t %DOCKER_IMAGE%:%TAG% ."
+            }
+        }
+
+        stage('Login to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds',
+                usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                    // Fixed: Changed 'sh' to 'bat'
+                    bat "echo %PASSWORD%| docker login -u %USERNAME% --password-stdin"
+                }
+            }
+        }
+
+        stage('Push Image') {
+            steps {
+                // Fixed: Changed 'sh' to 'bat'
+                bat "docker push %DOCKER_IMAGE%:%TAG%"
+            }
+        }
+    }
+}
+
+C1 maven.yml 
+
+name: Java CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '11'
+
+    - name: Build using Maven
+      run: mvn clean install
+      working-directory: demo
+
+C2 Jenkinsfile
+
+pipeline {
+    agent any
+
+    tools {
+        maven 'Maven3'
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git branch:'main',url:'https://github.com/VarshithaJ13/maven.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                dir('demo'){
+                bat 'mvn clean install'
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                dir('demo'){
+                bat 'mvn test'
+                }
+            }
+        }
+    }
+}
+
+
+b1 :java
+
+FROM eclipse-temurin:17
+WORKDIR /app
+COPY . .
+RUN javac app.java
+CMD ["java", "app"]
+
+cmd commands same as python
+
+b1:html
+
+FROM nginx:alpine
+RUN rm -rf /usr/share/nginx/html/*
+COPY . .
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+
+index.html
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Docker Website</title>
+</head>
+<body>
+    <h1>Hello from Docker Nginx!</h1>
+    <p>This is a static web app running inside a container.</p>
+</body>
+</html>
+
+cmd commands 
+
+docker build -t static-app
+docker images
+docker run -d -p 9090:80 static-app
+
+then in the browser type
+http://localhost:9090/
+to see html content
+
+automatic demo creation
+
+mvn archetype:generate -DgroupId=com.example -DartifactId=demo -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
+
+https://my.slack.com/services/new/jenkins-ci
+
+for failure in slack type in the nxt line of echo Jenkins as exit 1
+
+https://myaccount.google.com/apppasswords
+
+
+Configure email notification
+
+Manage Jenkins → System → find E-mail notification section
+Fill
+
+SMTP server : smtp.gmail.com
+Advanced
+
+• Use SMTP Authentication
+  User name : varshithraj07@gmail.com
+  Password : app password
+
+• Use TLS
+
+SMTP Port : 587
+Reply to address : varshithraj07@gmail.com
+
+Test configuration by sending test email
+
+It sends the test email
+after the test email : varshithraj07@gmail.com
+
+It sends the test email to the to this
+
+
+To get app password
+
+In the email id varshithraj07@gmail.com
+
+* In security & sign-in add 2-step verification
+  then go to
+
+https://myaccount.google.com/apppasswords
+
+Then enter app name as Jenkins
+then click create
+it generate the app password
